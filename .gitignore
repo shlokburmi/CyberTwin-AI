@@ -1,0 +1,33 @@
+# Environments
+venv/
+env/
+ENV/
+.env
+.venv
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs and databases
+*.log
+*.sqlite3
+*.sqlite
+
+# Testing / Profiling
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node / Frontend (if you add a frontend later)
+node_modules/
+build/
+dist/
+.next/
