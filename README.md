@@ -1,1 +1,1 @@
-AI-powered Cyber Digital Twin for Attack Simulation, Threat Prediction, RAG-based Security Intelligence, and Autonomous Remediation.
+AI-powered Cyber Digital Twin for Attack Simulation, Threat Prediction, RAG-based Security Intelligence, and Autonomous Remediation
