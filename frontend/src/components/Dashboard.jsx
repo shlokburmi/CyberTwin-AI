@@ -59,6 +59,42 @@ export default function Dashboard({ refreshKey, showToast }) {
     fetchData();
   }, [fetchData, refreshKey]);
 
+  const handleGenerateReport = () => {
+    if (!stats) {
+      showToast('No data available to generate report.', 'error');
+      return;
+    }
+    const reportContent = `CyberTwin AI - SOC Security Report
+Generated: ${new Date().toLocaleString()}
+
+=========================================
+SYSTEM HEALTH OVERVIEW
+=========================================
+Overall Risk Score : ${stats.risk_score} / 100
+Events Analyzed    : ${stats.total_logs_analyzed}
+Auto-Mitigated     : ${stats.attacks_blocked}
+
+=========================================
+RECENT THREAT TELEMETRY
+=========================================
+Last Detected      : ${stats.last_attack_type ? stats.last_attack_type.replace(/_/g, ' ') : 'None'}
+Active Threats     : ${alerts.length} critical incidents
+
+-- End of Report --`;
+
+    const blob = new Blob([reportContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SOC_Report_${new Date().toISOString().slice(0, 10)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('Report generated and downloaded successfully.', 'success');
+  };
+
   // Animated values
   const riskScoreRaw = stats?.risk_score || 0;
   const eventsAnalyzedRaw = stats?.total_logs_analyzed || 0;
@@ -114,7 +150,7 @@ export default function Dashboard({ refreshKey, showToast }) {
             Last 24 Hours
           </button>
           <button 
-            onClick={() => showToast('Generating PDF Report... This may take a moment.', 'success')}
+            onClick={handleGenerateReport}
             className="px-4 py-2 bg-zinc-200 text-zinc-900 rounded-lg text-sm font-bold hover:bg-white transition-colors shadow-sm"
           >
             Generate Report

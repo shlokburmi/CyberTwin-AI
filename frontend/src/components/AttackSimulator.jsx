@@ -110,18 +110,26 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
     
     try {
       showToast('Demo sequence started: Phase 1 - Brute Force', 'info');
-      await runSimulationAction('brute_force');
+      const r1 = await runSimulationAction('brute_force');
       
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise(resolve => setTimeout(resolve, 4000));
       
       showToast('Demo sequence phase 2: SQL Injection', 'info');
-      await runSimulationAction('sql_injection');
+      const r2 = await runSimulationAction('sql_injection');
       
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise(resolve => setTimeout(resolve, 4000));
       
       showToast('Demo sequence phase 3: Insider Threat Data Exfiltration', 'warning');
-      await runSimulationAction('insider_threat');
+      const r3 = await runSimulationAction('insider_threat');
       
+      // Aggregate the results for the final view
+      setLastResult({
+        attack: 'Multi-Vector APT Sequence (Demo)',
+        dl_result: { confidence: Math.max(r1.dl_result?.confidence||0, r2.dl_result?.confidence||0, r3.dl_result?.confidence||0) },
+        risk_score: Math.max(r1.risk_score, r2.risk_score, r3.risk_score),
+        recommendation: 'Critical multi-stage attack detected involving credential stuffing, database fuzzing, and data exfiltration. Immediate system lockdown and credential rotation required. ' + (r3.recommendation || '')
+      });
+
       showToast('Demo sequence completed successfully.', 'success');
     } catch (error) {
       console.error("Demo sequence interrupted", error);
@@ -129,6 +137,12 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
     } finally {
       setDemoRunning(false);
     }
+  };
+
+  const handleCustomSequence = async () => {
+    if (demoRunning) return;
+    showToast('Launching custom sequence (Credential Stuffing)', 'info');
+    await runSimulationAction('credential_stuffing');
   };
 
   return (
@@ -149,7 +163,8 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
             {demoRunning ? 'Demo in Progress...' : 'Run Full Demo'}
           </button>
           <button 
-            onClick={() => showToast('Custom Sequence Builder coming in v2.0', 'info')}
+            onClick={handleCustomSequence}
+            disabled={loading !== null || demoRunning}
             className="px-5 py-2.5 bg-zinc-200 text-zinc-900 rounded-lg text-sm font-bold hover:bg-white transition-colors disabled:opacity-50"
           >
             Launch Custom Sequence
