@@ -150,8 +150,23 @@ def run_simulation(attack_type: str) -> dict:
     event_store.add_feed_event("rag_engine", "Mitigation recommendation generated ✓", "success")
 
     # ── Step 5: Calculate risk score ──────────────────────────────
-    base_risk = event_store.stats.get("risk_score", 25)
-    new_risk = min(99, base_risk + profile["risk_boost"] + random.randint(-5, 10))
+    # A genuine risk score derived from ML anomaly ratio and DL confidence
+    anomaly_factor = ml_result.get("anomaly_ratio", 0.5) * 100
+    dl_factor = dl_result.get("confidence", 0.5) * 100
+    
+    # Weight based on severity profile
+    severity_multiplier = {
+        "Critical": 1.15,
+        "High": 1.0,
+        "Medium": 0.75,
+        "Low": 0.5
+    }.get(profile["severity"], 1.0)
+    
+    # Dynamic risk calculation (40% ML Anomaly + 60% DL Pattern matching)
+    calculated_risk = int(((anomaly_factor * 0.4) + (dl_factor * 0.6)) * severity_multiplier)
+    
+    # Ensure it stays within realistic bounds
+    new_risk = max(15, min(99, calculated_risk))
 
     # ── Step 6: Generate alert ────────────────────────────────────
     alert = {
