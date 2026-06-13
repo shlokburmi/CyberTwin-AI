@@ -27,6 +27,7 @@ class DLService:
         self.seq_length = 5
         self.model_path = os.path.join(os.path.dirname(__file__), 'dl_model.pth')
         self.is_trained = False
+        self.df = None
         
         self._initialize_model()
 
@@ -37,6 +38,11 @@ class DLService:
                 self.model.eval()
                 self.is_trained = True
                 print("DL Model loaded from disk.")
+                
+                # Also try to load the dataframe for sampling
+                data_path = os.path.join(os.path.dirname(__file__), '../../sample_logs/login_logs.csv')
+                if os.path.exists(data_path):
+                    self.df = pd.read_csv(data_path)
                 return
             except Exception as e:
                 print(f"Failed to load DL model from disk: {e}")
@@ -52,9 +58,9 @@ class DLService:
             return
 
         try:
-            df = pd.read_csv(data_path)
+            self.df = pd.read_csv(data_path)
             # Use failed_attempts and login_success
-            features = df[['failed_attempts', 'login_success']].values
+            features = self.df[['failed_attempts', 'login_success']].values
             
             # Simple sequence formatting
             X, y = [], []
@@ -90,25 +96,19 @@ class DLService:
 
     def analyze_sequence(self):
         # Fallback if somehow not trained
-        if not self.is_trained:
+        if not self.is_trained or self.df is None or len(self.df) <= self.seq_length:
             return {
                 "threat_prediction": "Unknown",
                 "confidence": 0.0,
                 "severity": "Low"
             }
             
-        # For MVP, we'll simulate a random sequence or grab a highly suspicious one
-        # to demonstrate the endpoint
-        is_attack = random.random() > 0.3 # 70% chance to show an attack for demo
-        
-        if is_attack:
-            # Simulate a sequence of rapid failed logins
-            mock_seq = [[1, 0], [3, 0], [5, 0], [12, 0], [25, 0]]
-        else:
-            # Simulate normal
-            mock_seq = [[0, 1], [0, 1], [1, 1], [0, 1], [0, 1]]
+        # Extract features and pick a random sequence from actual data
+        features = self.df[['failed_attempts', 'login_success']].values
+        start_idx = random.randint(0, len(features) - self.seq_length - 1)
+        seq = features[start_idx:start_idx + self.seq_length]
             
-        seq_tensor = torch.tensor([mock_seq], dtype=torch.float32).to(self.device)
+        seq_tensor = torch.tensor([seq], dtype=torch.float32).to(self.device)
         
         with torch.no_grad():
             output = self.model(seq_tensor)

@@ -10,3 +10,4 @@ chromadb
 sentence-transformers
 pydantic
 requests
+langchain-groq

@@ -7,6 +7,7 @@ class MLService:
     def __init__(self):
         self.model = IsolationForest(contamination=0.05, random_state=42)
         self.is_trained = False
+        self.df = None
         self._train_model()
 
     def _train_model(self):
@@ -16,10 +17,10 @@ class MLService:
             return
             
         try:
-            df = pd.read_csv(data_path)
+            self.df = pd.read_csv(data_path)
             # Select features for anomaly detection
             features = ['failed_attempts', 'login_success']
-            X = df[features]
+            X = self.df[features]
             
             self.model.fit(X)
             self.is_trained = True
@@ -28,7 +29,7 @@ class MLService:
             print(f"Error training model: {e}")
 
     def detect_anomaly(self):
-        if not self.is_trained:
+        if not self.is_trained or self.df is None or self.df.empty:
             # Fallback mock response if not trained
             return {
                 "risk_score": random.randint(70, 95),
@@ -37,9 +38,11 @@ class MLService:
                 "recommendation": "Block suspicious IP"
             }
 
-        # Simulate an incoming log that might be an anomaly
-        failed_attempts = random.choice([1, 2, 15, 30])
-        login_success = 0 if failed_attempts > 3 else 1
+        # Sample an actual log from the dataset
+        sample = self.df.sample(n=1).iloc[0]
+        failed_attempts = sample['failed_attempts']
+        login_success = sample['login_success']
+        ip_address = sample.get('ip_address', 'Unknown IP')
         
         # Predict: 1 for normal, -1 for anomaly
         prediction = self.model.predict([[failed_attempts, login_success]])[0]
@@ -47,16 +50,16 @@ class MLService:
         if prediction == -1:
             return {
                 "risk_score": random.randint(80, 99),
-                "threat": "Brute Force",
+                "threat": "New Anomaly Detected: Brute Force",
                 "severity": "High",
-                "recommendation": "Block suspicious IP"
+                "recommendation": f"Block suspicious IP: {ip_address}"
             }
         else:
             return {
                 "risk_score": random.randint(10, 40),
-                "threat": "None",
+                "threat": "Normal Login Activity",
                 "severity": "Low",
-                "recommendation": "No action needed"
+                "recommendation": f"IP {ip_address} acting normally"
             }
 
 ml_service = MLService()

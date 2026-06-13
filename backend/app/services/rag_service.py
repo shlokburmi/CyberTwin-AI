@@ -1,12 +1,17 @@
 import os
+from dotenv import load_dotenv
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
+from langchain_groq import ChatGroq
+
+load_dotenv()
 
 class RAGService:
     def __init__(self):
         self.embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
         self.vectorstore = None
+        self.llm = ChatGroq(model_name="llama3-8b-8192")
         self._initialize_knowledge_base()
 
     def _initialize_knowledge_base(self):
@@ -30,11 +35,12 @@ class RAGService:
         if not self.vectorstore:
             return "Knowledge base is currently unavailable."
             
-        docs = self.vectorstore.similarity_search(question, k=1)
+        docs = self.vectorstore.similarity_search(question, k=2)
         if docs:
-            # We skip an LLM layer for MVP simplicity to avoid OpenAI API keys,
-            # and just return the most relevant document directly.
-            return docs[0].page_content
+            context = "\n".join([doc.page_content for doc in docs])
+            prompt = f"You are a helpful cybersecurity assistant named CyberTwin RAG Assistant. Use the following cybersecurity knowledge context to answer the user's question concisely. If the context isn't helpful, use your general cybersecurity knowledge but state so. Be helpful and professional.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:"
+            response = self.llm.invoke(prompt)
+            return response.content
         else:
             return "I couldn't find an answer to your question in my cybersecurity knowledge base."
 
