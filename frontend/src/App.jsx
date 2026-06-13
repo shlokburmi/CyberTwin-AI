@@ -36,11 +36,10 @@ export default function App() {
             {activeTab === 'assistant' && <SecurityAssistant showToast={showToast} />}
             {activeTab === 'architecture' && <ArchitectureFlow />}
           </div>
-          
-          {/* Realism Footer */}
-          <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
-            <p className="text-[10px] text-zinc-600 font-medium tracking-widest uppercase">CyberTwin AI • Educational SOC Simulation Platform</p>
-          </div>
+            {/* Realism Footer */}
+            <div className="mt-12 text-center pointer-events-none">
+              <p className="text-[10px] text-zinc-600 font-medium tracking-widest uppercase">CyberTwin AI • Educational SOC Simulation Platform</p>
+            </div>
         </main>
 
         {/* Global Toast Notification */}
