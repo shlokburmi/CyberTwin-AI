@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import {
   Shield, Server, Activity, AlertTriangle, Zap,
-  Cpu, MoreHorizontal, TrendingUp
+  Cpu, MoreHorizontal, TrendingUp, Info
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
