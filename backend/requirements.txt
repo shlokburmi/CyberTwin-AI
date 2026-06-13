@@ -5,6 +5,7 @@ pandas
 scikit-learn
 python-dotenv
 langchain
+langchain-community
 chromadb
 sentence-transformers
 pydantic
