@@ -5,7 +5,7 @@ import {
   Server, ShieldAlert, CheckCircle2, Shield
 } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8000/api/v1';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
 const severityConfig = {
   Critical: { border: 'border-l-critical', text: 'text-critical', bg: 'bg-critical/10' },

@@ -5,7 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Send, Shield, User, Copy, Loader2, Key, Database, BookOpen, AlertCircle, AlertTriangle, Brain, Search } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8000/api/v1';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
 const SUGGESTIONS = [
   { text: 'Prevent brute force attacks', icon: <Shield size={14} className="text-success" /> },
