@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import random
 from app.services.ml_service import ml_service
 from app.services.rag_service import rag_service
+from app.services.dl_service import dl_service
 
 router = APIRouter(prefix="/api/v1")
 
@@ -13,6 +14,11 @@ class AssistantQuery(BaseModel):
 def threat_detection():
     # Returns a simulated anomaly detection run
     return ml_service.detect_anomaly()
+
+@router.get("/dl-threat-analysis")
+def dl_threat_analysis():
+    # Returns LSTM sequence analysis
+    return dl_service.analyze_sequence()
 
 @router.post("/security-assistant")
 def security_assistant(query: AssistantQuery):
@@ -40,5 +46,6 @@ def get_system_status():
     return {
         "backend": "active",
         "ml_engine": "active",
+        "dl_engine": "active",
         "rag_engine": "active"
     }
