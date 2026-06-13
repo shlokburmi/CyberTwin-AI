@@ -8,10 +8,10 @@ import {
 const API_BASE = 'http://localhost:8000/api/v1';
 
 const severityConfig = {
-  Critical: { border: 'border-l-danger', text: 'text-danger', bg: 'bg-danger/10' },
+  Critical: { border: 'border-l-critical', text: 'text-critical', bg: 'bg-critical/10' },
   High: { border: 'border-l-warning', text: 'text-warning', bg: 'bg-warning/10' },
-  Medium: { border: 'border-l-accent', text: 'text-accent', bg: 'bg-accent/10' },
-  Low: { border: 'border-l-primary', text: 'text-primary', bg: 'bg-primary/10' },
+  Medium: { border: 'border-l-amber', text: 'text-amber', bg: 'bg-amber/10' },
+  Low: { border: 'border-l-success', text: 'text-success', bg: 'bg-success/10' },
 };
 
 export default function ThreatAlerts({ refreshKey }) {

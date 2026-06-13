@@ -3,9 +3,16 @@ import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Send, Shield, User, Copy, Loader2 } from 'lucide-react';
+import { Send, Shield, User, Copy, Loader2, Key, Database, BookOpen, AlertCircle } from 'lucide-react';
 
 const API_BASE = 'http://localhost:8000/api/v1';
+
+const SUGGESTIONS = [
+  { text: 'How to prevent brute force attacks?', icon: <Key size={14} className="text-warning" /> },
+  { text: 'Explain SQL injection mitigation', icon: <Database size={14} className="text-primary" /> },
+  { text: 'What is credential stuffing?', icon: <AlertCircle size={14} className="text-critical" /> },
+  { text: 'MITRE ATT&CK explained', icon: <BookOpen size={14} className="text-accent" /> },
+];
 
 export default function SecurityAssistant() {
   const [query, setQuery] = useState('');
@@ -23,13 +30,14 @@ export default function SecurityAssistant() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+  const handleSend = async (e, forcedText = null) => {
+    if (e) e.preventDefault();
+    const question = forcedText || query;
+    if (!question.trim()) return;
 
     const userMsg = {
       role: 'user',
-      content: query,
+      content: question,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
     
@@ -63,6 +71,25 @@ export default function SecurityAssistant() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)]">
+      {/* Suggestion Chips */}
+      {messages.length <= 1 && (
+        <div className="px-4 md:px-12 py-6 grid grid-cols-1 md:grid-cols-2 gap-3 max-w-4xl mx-auto w-full">
+          {SUGGESTIONS.map((s, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleSend({ preventDefault: () => {}, target: { value: s.text } }, s.text)}
+              className="flex items-center gap-3 p-4 bg-card border border-border rounded-xl text-sm text-zinc-300
+                hover:border-zinc-600 hover:bg-zinc-800/50 hover:-translate-y-0.5 transition-all duration-200 text-left group shadow-sm"
+            >
+              <div className="p-2 rounded-lg bg-zinc-900 border border-border group-hover:bg-zinc-800 transition-colors">
+                {s.icon}
+              </div>
+              <span className="font-medium">{s.text}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto px-4 md:px-12 py-6 space-y-6">
         
