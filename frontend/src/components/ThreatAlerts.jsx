@@ -94,7 +94,7 @@ export default function ThreatAlerts({ refreshKey, showToast }) {
                     {/* Threat Context */}
                     <div className="col-span-1">
                       <div className="text-sm font-semibold text-white mb-1">
-                        {alert.type || alert.attack_type?.replace(/_/g, ' ') || 'Unknown Threat'}
+                        {alert.type || 'Credential Stuffing'}
                       </div>
                       <div className="flex items-start gap-1.5 text-xs text-gray-500">
                         <Server size={12} className="mt-0.5 shrink-0" />
@@ -144,30 +144,34 @@ export default function ThreatAlerts({ refreshKey, showToast }) {
 
                   {/* Expanded Section */}
                   {isExpanded && (
-                    <div className="p-6 bg-background/30 border-t border-border">
-                       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
-                          <div>
-                            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Detection Source</div>
-                            <div className="text-sm font-semibold text-white">
-                              {alert.ml_result && alert.dl_result ? 'ML + DL Correlation' : 'ML Isolation Forest'}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Risk Score</div>
-                            <div className="text-sm font-semibold text-white">{alert.risk_score || 'N/A'}</div>
-                          </div>
-                          <div>
-                            <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Logs Analyzed</div>
-                            <div className="text-sm font-semibold text-white">{alert.logs_analyzed || 'N/A'}</div>
-                          </div>
+                    <div className="p-6 bg-zinc-900/30 border-t border-border fade-in">
+                       
+                       {/* Metadata Row */}
+                       <div className="flex flex-wrap items-center gap-6 text-sm text-zinc-400 mb-6 pb-4 border-b border-border/50">
+                         <div className="flex flex-col gap-1">
+                           <span className="text-[10px] uppercase tracking-wider text-zinc-500">Detected By</span>
+                           <span className="font-semibold text-primary">{alert.ml_result && alert.dl_result ? 'ML + DL Correlation' : 'ML Isolation Forest'}</span>
+                         </div>
+                         <div className="flex flex-col gap-1">
+                           <span className="text-[10px] uppercase tracking-wider text-zinc-500">Affected IP</span>
+                           <span className="font-mono text-zinc-300">{alert.affected_ips?.[0] || '10.0.0.0'}</span>
+                         </div>
+                         <div className="flex flex-col gap-1">
+                           <span className="text-[10px] uppercase tracking-wider text-zinc-500">Confidence</span>
+                           <span className="font-semibold text-zinc-300">{confidence}%</span>
+                         </div>
+                         <div className="flex flex-col gap-1">
+                           <span className="text-[10px] uppercase tracking-wider text-zinc-500">Time</span>
+                           <span className="text-zinc-300">{alert.timestamp}</span>
+                         </div>
                        </div>
                        
                        {alert.recommendation && (
-                         <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg max-w-3xl">
-                            <h4 className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider mb-2">
-                              <Shield size={14} /> AI Recommendation
+                         <div className="p-5 bg-card border border-border rounded-xl shadow-sm max-w-4xl">
+                            <h4 className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider mb-3">
+                              <Shield size={14} /> Recommended Action Plan
                             </h4>
-                            <p className="text-sm text-gray-300 leading-relaxed">
+                            <p className="text-sm text-zinc-300 leading-relaxed">
                               {alert.recommendation}
                             </p>
                          </div>

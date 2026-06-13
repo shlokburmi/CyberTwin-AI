@@ -39,7 +39,7 @@ export default function ArchitectureFlow() {
                 icon={<Cpu size={16} className="text-primary" />}
                 title="ML Engine"
                 subtitle="ISOLATION FOREST"
-                desc="Unsupervised learning algorithm isolating rapid, zero-day anomalies by calculating path lengths in random decision trees."
+                desc="Detects unusual isolated behavior by calculating path lengths in random decision trees."
               />
             </div>
             
@@ -48,7 +48,7 @@ export default function ArchitectureFlow() {
                 icon={<Share2 size={16} className="text-purple-400" />}
                 title="DL Engine"
                 subtitle="LSTM NETWORK"
-                desc="Long Short-Term Memory processes time-series logs to predict complex, multi-stage attack narratives over extended durations."
+                desc="Finds suspicious attack patterns over time by processing sequences of logs."
                 hasChart
               />
             </div>
@@ -61,7 +61,7 @@ export default function ArchitectureFlow() {
                 icon={<MessageSquare size={16} className="text-zinc-300" />}
                 title="Security Assistant"
                 subtitle="RAG LLM"
-                desc="Retrieves contextual threat intel and generates human-readable incident summaries and remediation steps."
+                desc="Provides remediation guidance using OWASP, MITRE, and NIST frameworks."
               />
             </div>
             

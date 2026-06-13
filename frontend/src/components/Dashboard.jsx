@@ -285,9 +285,12 @@ Active Threats     : ${alerts.length} critical incidents
             </div>
             
             {stats?.last_attack_type && (
-              <div className="flex items-center gap-2 text-[10px] font-bold text-primary tracking-wider">
+              <div className="flex items-center gap-2 text-[10px] font-bold text-primary tracking-wider relative group w-max">
                 <Zap size={12} />
-                ML + DL DETECTED • {((stats?.last_dl_confidence || 0.9) * 100).toFixed(0)}% CONFIDENCE
+                ML + DL DETECTED • {((stats?.last_dl_confidence || 0.9) * 100).toFixed(0)}% CONFIDENCE <Info size={12} className="cursor-help text-zinc-500 hover:text-zinc-300" />
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-2.5 bg-zinc-800 text-xs text-zinc-300 normal-case tracking-normal font-normal rounded-lg shadow-xl border border-zinc-700 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                  Confidence score represents the probability assigned after ML anomaly detection and DL sequence correlation.
+                </div>
               </div>
             )}
           </div>

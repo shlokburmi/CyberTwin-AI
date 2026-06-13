@@ -28,13 +28,18 @@ export default function App() {
       <div className="flex-1 flex flex-col min-w-0 relative">
         <TopBar showToast={showToast} />
         
-        <main className="flex-1 overflow-auto p-6 lg:p-8">
-          <div className="max-w-[1400px] mx-auto">
+        <main className="flex-1 overflow-auto p-6 lg:p-8 relative">
+          <div className="max-w-[1400px] mx-auto pb-12">
             {activeTab === 'dashboard' && <Dashboard refreshKey={refreshKey} showToast={showToast} />}
             {activeTab === 'simulator' && <AttackSimulator onSimulationComplete={handleSimulationComplete} showToast={showToast} />}
             {activeTab === 'alerts' && <ThreatAlerts refreshKey={refreshKey} showToast={showToast} />}
             {activeTab === 'assistant' && <SecurityAssistant showToast={showToast} />}
             {activeTab === 'architecture' && <ArchitectureFlow />}
+          </div>
+          
+          {/* Realism Footer */}
+          <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
+            <p className="text-[10px] text-zinc-600 font-medium tracking-widest uppercase">CyberTwin AI • Educational SOC Simulation Platform</p>
           </div>
         </main>
 

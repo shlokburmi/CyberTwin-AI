@@ -172,6 +172,44 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
         </div>
       </div>
 
+      {/* Demo Timeline Checklist */}
+      {demoRunning && (
+        <div className="premium-card p-6 border-accent/30 bg-accent/5 fade-in">
+          <div className="flex items-center gap-2 mb-4">
+            <Loader2 size={16} className="animate-spin text-accent" />
+            <h3 className="text-sm font-bold text-accent tracking-wide uppercase">Multi-Vector APT Simulation in Progress</h3>
+          </div>
+          <div className="space-y-3 pl-2">
+            {PIPELINE_STEPS.map((step, idx) => {
+              const isDone = pipelineStep > idx;
+              const isCurrent = pipelineStep === idx;
+              const textMap = [
+                'Generating attack telemetry',
+                'ML anomaly detection complete',
+                'DL sequence analysis complete',
+                'Risk score updated',
+                'Alert generated',
+                'RAG mitigation generated'
+              ];
+              return (
+                <div key={idx} className={`flex items-center gap-3 transition-opacity duration-300 ${isDone || isCurrent ? 'opacity-100' : 'opacity-30'}`}>
+                  {isDone ? (
+                    <Check size={16} className="text-success" />
+                  ) : isCurrent ? (
+                    <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse ml-1 mr-1" />
+                  ) : (
+                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 ml-1 mr-1" />
+                  )}
+                  <span className={`text-sm ${isDone ? 'text-zinc-300' : isCurrent ? 'text-zinc-100 font-medium' : 'text-zinc-500'}`}>
+                    {textMap[idx]}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Active Pipeline */}
       <div className="premium-card p-6">
         <div className="flex items-center gap-2 mb-8">
@@ -241,7 +279,15 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
                   <div className={`text-sm font-semibold ${attack.color}`}>{attack.severity}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] font-bold text-zinc-600 tracking-wider mb-1">CONFIDENCE</div>
+                  <div className="text-[10px] font-bold text-zinc-600 tracking-wider mb-1 flex items-center justify-end gap-1">
+                    CONFIDENCE
+                    <div className="relative group flex items-center cursor-help">
+                      <Info size={10} className="text-zinc-500 hover:text-zinc-300" />
+                      <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-zinc-800 text-xs text-zinc-300 normal-case tracking-normal font-normal rounded shadow-xl border border-zinc-700 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 text-left">
+                        Confidence score represents the probability assigned after ML anomaly detection and DL sequence correlation.
+                      </div>
+                    </div>
+                  </div>
                   <div className="text-sm font-semibold text-zinc-200">{attack.confidence}</div>
                 </div>
               </div>
@@ -286,27 +332,46 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
                </div>
             </div>
             
-            {/* Recommendations Column */}
+            {/* RAG Mitigation Result - Structured */}
             <div className="lg:col-span-2">
-              <div className="flex items-center gap-2 text-sm font-bold text-zinc-300 mb-4">
-                <Info size={16} className="text-accent" /> Recommended Actions
+              <div className="flex items-center gap-2 text-sm font-bold text-accent mb-4">
+                <Info size={16} /> Incident Response Playbook
               </div>
-              <div className="bg-zinc-900/50 rounded-lg p-5 border border-border">
-                {lastResult.recommendation ? (
-                  <ul className="space-y-3">
-                    {lastResult.recommendation.split('. ').map((rec, idx) => {
-                      if (!rec.trim()) return null;
-                      return (
-                        <li key={idx} className="flex items-start gap-3 text-sm text-zinc-300">
-                           <div className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 mt-1.5" />
-                           <span className="leading-relaxed">{rec.trim()}{rec.endsWith('.') ? '' : '.'}</span>
-                        </li>
-                      );
-                    })}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Immediate Action */}
+                <div className="bg-zinc-900/80 border border-border rounded-lg p-4 shadow-sm hover:border-zinc-700 transition-colors">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-critical flex items-center gap-2 mb-3">
+                    <AlertTriangle size={12} /> Immediate Action
+                  </h4>
+                  <ul className="space-y-2 text-xs text-zinc-300">
+                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-critical mt-1.5 shrink-0" />Block suspicious origin IPs automatically.</li>
+                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-critical mt-1.5 shrink-0" />Lock compromised or targeted accounts.</li>
+                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-critical mt-1.5 shrink-0" />Revoke active sessions for affected endpoints.</li>
                   </ul>
-                ) : (
-                  <span className="text-sm text-zinc-500">No automated actions recommended. Investigate manually.</span>
-                )}
+                </div>
+
+                {/* Recommended Hardening */}
+                <div className="bg-zinc-900/80 border border-border rounded-lg p-4 shadow-sm hover:border-zinc-700 transition-colors">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-primary flex items-center gap-2 mb-3">
+                    <ShieldAlert size={12} /> Recommended Hardening
+                  </h4>
+                  <ul className="space-y-2 text-xs text-zinc-300">
+                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />Enforce MFA across all external access points.</li>
+                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />Implement stricter rate limiting on login APIs.</li>
+                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />Enhance logging for anomaly correlation.</li>
+                  </ul>
+                </div>
+
+                {/* Threat Context */}
+                <div className="md:col-span-2 bg-zinc-900/80 border border-border rounded-lg p-4 shadow-sm hover:border-zinc-700 transition-colors">
+                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2 mb-2">
+                    <Server size={12} /> Threat Context
+                  </h4>
+                  <p className="text-xs text-zinc-400 leading-relaxed italic">
+                    "{(lastResult.recommendation || 'Multiple distinct threat vectors detected. Immediate lockdown of external interfaces recommended. Incident Response teams deployed.').split('. ').slice(0, 2).join('. ')}."
+                  </p>
+                </div>
               </div>
             </div>
           </div>

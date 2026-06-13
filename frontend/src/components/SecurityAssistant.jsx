@@ -3,15 +3,15 @@ import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Send, Shield, User, Copy, Loader2, Key, Database, BookOpen, AlertCircle } from 'lucide-react';
+import { Send, Shield, User, Copy, Loader2, Key, Database, BookOpen, AlertCircle, AlertTriangle, Brain, Search } from 'lucide-react';
 
 const API_BASE = 'http://localhost:8000/api/v1';
 
 const SUGGESTIONS = [
-  { text: 'How to prevent brute force attacks?', icon: <Key size={14} className="text-warning" /> },
-  { text: 'Explain SQL injection mitigation', icon: <Database size={14} className="text-primary" /> },
-  { text: 'What is credential stuffing?', icon: <AlertCircle size={14} className="text-critical" /> },
-  { text: 'MITRE ATT&CK explained', icon: <BookOpen size={14} className="text-accent" /> },
+  { text: 'Prevent brute force attacks', icon: <Shield size={14} className="text-success" /> },
+  { text: 'SQL injection mitigation', icon: <AlertTriangle size={14} className="text-warning" /> },
+  { text: 'Explain MITRE ATT&CK', icon: <Brain size={14} className="text-purple-400" /> },
+  { text: 'Credential stuffing explained', icon: <Search size={14} className="text-accent" /> },
 ];
 
 export default function SecurityAssistant() {
