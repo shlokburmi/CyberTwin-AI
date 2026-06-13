@@ -92,6 +92,10 @@ function Dashboard() {
                 <span className="text-accent">{systemStatus.ml_engine}</span>
               </div>
               <div className="flex justify-between text-sm">
+                <span>DL Engine (LSTM)</span>
+                <span className="text-accent">{systemStatus.dl_engine}</span>
+              </div>
+              <div className="flex justify-between text-sm">
                 <span>RAG Engine</span>
                 <span className="text-accent">{systemStatus.rag_engine}</span>
               </div>
@@ -108,23 +112,43 @@ function Dashboard() {
 function ThreatAlerts() {
   const [alerts, setAlerts] = useState([]);
   const [mlDetect, setMlDetect] = useState(null);
+  const [dlDetect, setDlDetect] = useState(null);
 
   useEffect(() => {
     axios.get(`${API_BASE}/alerts`).then(res => setAlerts(res.data)).catch(console.error);
   }, []);
 
-  const runDetection = () => {
+  const runMlDetection = () => {
     axios.get(`${API_BASE}/threat-detection`).then(res => setMlDetect(res.data)).catch(console.error);
+  };
+
+  const runDlDetection = () => {
+    axios.get(`${API_BASE}/dl-threat-analysis`).then(res => setDlDetect(res.data)).catch(console.error);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-white">Active Threat Alerts</h2>
-        <button onClick={runDetection} className="bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-          <Terminal size={18} /> Run ML Detection
-        </button>
+        <div className="flex gap-3">
+          <button onClick={runMlDetection} className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors border border-gray-700">
+            <Terminal size={18} /> Run ML
+          </button>
+          <button onClick={runDlDetection} className="bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+            <Activity size={18} /> Run DL Sequence Analysis
+          </button>
+        </div>
       </div>
+
+      {dlDetect && (
+        <div className="bg-primary/10 border border-primary p-4 rounded-xl flex justify-between items-center shadow-lg">
+          <div>
+            <h4 className="text-primary font-bold">Deep Learning Analysis: {dlDetect.threat_prediction}</h4>
+            <p className="text-sm text-gray-300">Confidence Score: {(dlDetect.confidence * 100).toFixed(0)}%</p>
+          </div>
+          <span className={`px-3 py-1 text-white text-xs rounded-full uppercase font-bold ${dlDetect.severity === 'High' ? 'bg-danger' : 'bg-accent'}`}>{dlDetect.severity}</span>
+        </div>
+      )}
 
       {mlDetect && (
         <div className="bg-danger/10 border border-danger p-4 rounded-xl flex justify-between items-center">
