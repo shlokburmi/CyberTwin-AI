@@ -64,11 +64,11 @@ export default function Sidebar({ activeTab, setActiveTab }) {
 
       {/* Footer Links */}
       <div className="p-4 space-y-1">
-        <button className="w-full flex items-center gap-3 px-2 py-2 text-gray-400 hover:text-gray-200 transition-colors">
+        <button onClick={() => showToast('Settings panel opening...', 'info')} className="w-full flex items-center gap-3 px-2 py-2 text-zinc-400 hover:text-zinc-200 transition-colors">
           <Settings size={18} />
           <span className="text-sm font-medium">Settings</span>
         </button>
-        <button className="w-full flex items-center gap-3 px-2 py-2 text-gray-400 hover:text-gray-200 transition-colors">
+        <button onClick={() => showToast('Connecting to support center...', 'info')} className="w-full flex items-center gap-3 px-2 py-2 text-zinc-400 hover:text-zinc-200 transition-colors">
           <HelpCircle size={18} />
           <span className="text-sm font-medium">Support</span>
         </button>

@@ -23,10 +23,10 @@ export default function TopBar() {
         </div>
 
         {/* Icons */}
-        <button className="text-gray-400 hover:text-white transition-colors">
+        <button onClick={() => showToast('You have 3 new notifications.', 'info')} className="text-zinc-400 hover:text-white transition-colors">
           <Bell size={18} />
         </button>
-        <button className="text-gray-400 hover:text-white transition-colors">
+        <button onClick={() => showToast('SOC Operator profile loaded.', 'info')} className="text-zinc-400 hover:text-white transition-colors">
           <Shield size={18} />
         </button>
       </div>

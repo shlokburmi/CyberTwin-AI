@@ -10,27 +10,46 @@ import ArchitectureFlow from './components/ArchitectureFlow';
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [toast, setToast] = useState(null);
+
+  const showToast = useCallback((message, type = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
 
   const handleSimulationComplete = useCallback(() => {
     setRefreshKey((prev) => prev + 1);
   }, []);
 
   return (
-    <div className="flex h-screen bg-background text-gray-200 font-sans">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className="flex h-screen bg-background text-zinc-300 font-sans">
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} showToast={showToast} />
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <TopBar />
+      <div className="flex-1 flex flex-col min-w-0 relative">
+        <TopBar showToast={showToast} />
         
         <main className="flex-1 overflow-auto p-6 lg:p-8">
           <div className="max-w-[1400px] mx-auto">
-            {activeTab === 'dashboard' && <Dashboard refreshKey={refreshKey} />}
-            {activeTab === 'simulator' && <AttackSimulator onSimulationComplete={handleSimulationComplete} />}
-            {activeTab === 'alerts' && <ThreatAlerts refreshKey={refreshKey} />}
-            {activeTab === 'assistant' && <SecurityAssistant />}
+            {activeTab === 'dashboard' && <Dashboard refreshKey={refreshKey} showToast={showToast} />}
+            {activeTab === 'simulator' && <AttackSimulator onSimulationComplete={handleSimulationComplete} showToast={showToast} />}
+            {activeTab === 'alerts' && <ThreatAlerts refreshKey={refreshKey} showToast={showToast} />}
+            {activeTab === 'assistant' && <SecurityAssistant showToast={showToast} />}
             {activeTab === 'architecture' && <ArchitectureFlow />}
           </div>
         </main>
+
+        {/* Global Toast Notification */}
+        {toast && (
+          <div className="absolute bottom-6 right-6 fade-in z-50">
+            <div className={`px-4 py-3 rounded-lg shadow-lg border text-sm font-medium flex items-center gap-2
+              ${toast.type === 'info' ? 'bg-zinc-800 border-zinc-700 text-white' : ''}
+              ${toast.type === 'success' ? 'bg-success/10 border-success/20 text-success' : ''}
+              ${toast.type === 'error' ? 'bg-critical/10 border-critical/20 text-critical' : ''}
+            `}>
+              {toast.message}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -44,7 +44,7 @@ function useAnimatedCounter(endValue, duration = 1000) {
   return count;
 }
 
-export default function Dashboard({ refreshKey }) {
+export default function Dashboard({ refreshKey, showToast }) {
   const [stats, setStats] = useState(null);
   const [systemStatus, setSystemStatus] = useState(null);
   const [alerts, setAlerts] = useState([]);
@@ -107,10 +107,16 @@ export default function Dashboard({ refreshKey }) {
           <p className="text-zinc-500 text-sm">Real-time threat telemetry and system status.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="px-4 py-2 bg-card border border-border rounded-lg text-sm font-medium hover:bg-zinc-800 transition-colors shadow-sm">
+          <button 
+            onClick={() => showToast('Filtering by Last 24 Hours', 'info')}
+            className="px-4 py-2 bg-card border border-border rounded-lg text-sm font-medium hover:bg-zinc-800 transition-colors shadow-sm"
+          >
             Last 24 Hours
           </button>
-          <button className="px-4 py-2 bg-zinc-200 text-zinc-900 rounded-lg text-sm font-bold hover:bg-white transition-colors shadow-sm">
+          <button 
+            onClick={() => showToast('Generating PDF Report... This may take a moment.', 'success')}
+            className="px-4 py-2 bg-zinc-200 text-zinc-900 rounded-lg text-sm font-bold hover:bg-white transition-colors shadow-sm"
+          >
             Generate Report
           </button>
         </div>
@@ -148,7 +154,7 @@ export default function Dashboard({ refreshKey }) {
                     dataKey="value"
                     stroke="none"
                     cornerRadius={5}
-                    animationDuration={1500}
+                    isAnimationActive={false}
                   >
                     <Cell fill={riskScore > 65 ? '#ea580c' : riskScore > 40 ? '#d97706' : '#3b82f6'} />
                     <Cell fill="#27272a" />

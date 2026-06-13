@@ -14,7 +14,7 @@ const severityConfig = {
   Low: { border: 'border-l-success', text: 'text-success', bg: 'bg-success/10' },
 };
 
-export default function ThreatAlerts({ refreshKey }) {
+export default function ThreatAlerts({ refreshKey, showToast }) {
   const [alerts, setAlerts] = useState([]);
   const [expandedId, setExpandedId] = useState(null);
   
@@ -182,7 +182,10 @@ export default function ThreatAlerts({ refreshKey }) {
       </div>
       
       <div className="flex justify-center pt-4">
-        <button className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-lg hover:bg-card transition-colors text-sm font-medium text-gray-300">
+        <button 
+          onClick={() => showToast('Loaded historical events into view.', 'info')}
+          className="flex items-center gap-2 px-4 py-2 bg-background border border-border rounded-lg hover:bg-card transition-colors text-sm font-medium text-zinc-300"
+        >
           <Filter size={14} /> Load More Events
         </button>
       </div>

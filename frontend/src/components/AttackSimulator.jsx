@@ -59,7 +59,7 @@ const PIPELINE_STEPS = [
   { key: 'rag', label: 'RAG MITIGATE', icon: <ShieldAlert size={18} /> },
 ];
 
-export default function AttackSimulator({ onSimulationComplete }) {
+export default function AttackSimulator({ onSimulationComplete, showToast }) {
   const [loading, setLoading] = useState(null);
   const [demoRunning, setDemoRunning] = useState(false);
   const [pipelineStep, setPipelineStep] = useState(2); // Default visual
@@ -109,14 +109,23 @@ export default function AttackSimulator({ onSimulationComplete }) {
     setLastResult(null);
     
     try {
-      // Sequence: Brute Force -> Delay -> SQL Injection -> Delay -> Insider Threat
+      showToast('Demo sequence started: Phase 1 - Brute Force', 'info');
       await runSimulationAction('brute_force');
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      showToast('Demo sequence phase 2: SQL Injection', 'info');
       await runSimulationAction('sql_injection');
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      showToast('Demo sequence phase 3: Insider Threat Data Exfiltration', 'warning');
       await runSimulationAction('insider_threat');
+      
+      showToast('Demo sequence completed successfully.', 'success');
     } catch (error) {
       console.error("Demo sequence interrupted", error);
+      showToast('Demo sequence failed or interrupted.', 'error');
     } finally {
       setDemoRunning(false);
     }
@@ -139,7 +148,10 @@ export default function AttackSimulator({ onSimulationComplete }) {
             {demoRunning ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
             {demoRunning ? 'Demo in Progress...' : 'Run Full Demo'}
           </button>
-          <button className="px-5 py-2.5 bg-zinc-200 text-zinc-900 rounded-lg text-sm font-bold hover:bg-white transition-colors disabled:opacity-50">
+          <button 
+            onClick={() => showToast('Custom Sequence Builder coming in v2.0', 'info')}
+            className="px-5 py-2.5 bg-zinc-200 text-zinc-900 rounded-lg text-sm font-bold hover:bg-white transition-colors disabled:opacity-50"
+          >
             Launch Custom Sequence
           </button>
         </div>
