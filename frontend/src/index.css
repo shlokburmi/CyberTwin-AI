@@ -1,29 +1,136 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
+/* ── Design Tokens ────────────────────────────────────────────── */
 @theme {
-  --color-background: #0B0F19;
-  --color-card: #161C2D;
-  --color-primary: #3B82F6;
-  --color-accent: #10B981;
-  --color-danger: #EF4444;
-  --color-warning: #F59E0B;
+  --color-background: #0b0f19;
+  --color-card: #171b26;
+  --color-primary: #3b82f6;
+  --color-accent: #00d0b5;
+  --color-danger: #f43f5e;
+  --color-warning: #fb923c;
+  --color-critical: #ff4c4c;
+  --color-border: #2a3143;
 }
 
+/* ── Base Styles ──────────────────────────────────────────────── */
 body {
-  @apply bg-background text-gray-200 font-sans antialiased;
+  @apply bg-background text-gray-200 antialiased;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Custom Scrollbar for cyber theme */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+}
+
+/* ── Glass / Card Effects ─────────────────────────────────────── */
+.sidebar-glass {
+  background: var(--color-card);
+}
+
+.card-glow {
+  box-shadow: 0 0 20px -5px rgba(0, 208, 181, 0.15);
+}
+
+/* ── Animations ───────────────────────────────────────────────── */
+@keyframes pulse-glow-kf {
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px currentColor; }
+  50% { opacity: 0.5; box-shadow: 0 0 12px currentColor; }
+}
+
+.pulse-glow {
+  animation: pulse-glow-kf 2s ease-in-out infinite;
+}
+
+@keyframes fade-in-kf {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fade-in-kf 0.4s ease-out forwards;
+}
+
+@keyframes slide-in-kf {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.slide-in {
+  animation: slide-in-kf 0.3s ease-out forwards;
+}
+
+/* ── Typing Indicator ─────────────────────────────────────────── */
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+
+.typing-dot {
+  @apply w-2 h-2 bg-gray-400 rounded-full;
+  animation: typing-bounce 1.4s ease-in-out infinite;
+}
+
+/* ── Markdown Content (RAG Assistant) ─────────────────────────── */
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3 {
+  @apply text-white font-bold mt-3 mb-2;
+}
+
+.markdown-content h1 { @apply text-lg; }
+.markdown-content h2 { @apply text-base; }
+.markdown-content h3 { @apply text-sm; }
+
+.markdown-content p {
+  @apply text-gray-300 text-sm leading-relaxed mb-2;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+  @apply pl-4 mb-2 space-y-1;
+}
+
+.markdown-content li {
+  @apply text-gray-300 text-sm leading-relaxed;
+}
+
+.markdown-content ul li { @apply list-disc; }
+.markdown-content ol li { @apply list-decimal; }
+
+.markdown-content strong {
+  @apply text-white font-semibold;
+}
+
+.markdown-content a {
+  @apply text-primary underline;
+}
+
+.markdown-content blockquote {
+  @apply border-l-2 border-primary/40 pl-3 italic text-gray-400;
+}
+
+/* ── Custom Scrollbar ─────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #0B0F19; 
+  background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #3B82F6; 
-  border-radius: 4px;
+  background: #2a3143;
+  border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #2563EB; 
+  background: #3b82f6;
+}
+
+/* ── Selection Color ──────────────────────────────────────────── */
+::selection {
+  background: rgba(59, 130, 246, 0.3);
+  color: white;
 }
