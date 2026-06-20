@@ -185,29 +185,43 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
     setScanRunning(true);
     setLastResult(null);
     
+    const phases = [
+      { type: 'brute_force', label: 'Brute Force' },
+      { type: 'sql_injection', label: 'SQL Injection' },
+      { type: 'credential_stuffing', label: 'Credential Stuffing' },
+      { type: 'insider_threat', label: 'Insider Threat' },
+    ];
+
     try {
-      showToast('Deep scan initiated: Phase 1 — Brute Force Analysis', 'info');
-      const r1 = await runDetection('brute_force');
-      
-      await new Promise(resolve => setTimeout(resolve, 4000));
-      
-      showToast('Deep scan phase 2: SQL Injection Analysis', 'info');
-      const r2 = await runDetection('sql_injection');
-      
-      await new Promise(resolve => setTimeout(resolve, 4000));
-      
-      showToast('Deep scan phase 3: Insider Threat Analysis', 'warning');
-      const r3 = await runDetection('insider_threat');
-      
-      // Aggregate results from all three real detections
+      const results = [];
+      for (let i = 0; i < phases.length; i++) {
+        const phase = phases[i];
+        showToast(`Deep scan phase ${i + 1}/${phases.length}: ${phase.label} Analysis`, i === phases.length - 1 ? 'warning' : 'info');
+        const result = await runDetection(phase.type);
+        results.push(result);
+        if (i < phases.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+      }
+
+      // Aggregate results from all detections with per-phase breakdown
       setLastResult({
         attack: 'Multi-Vector APT Sequence',
         severity: 'Critical',
-        dl_result: { confidence: Math.max(r1.dl_result?.confidence||0, r2.dl_result?.confidence||0, r3.dl_result?.confidence||0) },
-        risk_score: Math.max(r1.risk_score, r2.risk_score, r3.risk_score),
-        logs_generated: (r1.logs_generated || 0) + (r2.logs_generated || 0) + (r3.logs_generated || 0),
+        dl_result: { confidence: Math.max(...results.map(r => r.dl_result?.confidence || 0)) },
+        risk_score: Math.max(...results.map(r => r.risk_score)),
+        logs_generated: results.reduce((sum, r) => sum + (r.logs_generated || 0), 0),
         ml_result: 'anomaly_detected',
-        recommendation: r3.recommendation || r2.recommendation || r1.recommendation || 'Multiple distinct threat vectors identified across authentication, database, and data exfiltration layers. Immediate containment and credential rotation required.',
+        recommendation: results.map(r => r.recommendation).filter(Boolean).pop() || 'Multiple distinct threat vectors identified across authentication, database, and data exfiltration layers. Immediate containment and credential rotation required.',
+        phases: results.map((r, i) => ({
+          name: phases[i].label,
+          attack: r.attack,
+          severity: r.severity,
+          confidence: r.dl_result?.confidence || 0,
+          risk_score: r.risk_score,
+          ml_result: r.ml_result,
+          logs_generated: r.logs_generated || 0,
+        })),
       });
 
       showToast('Deep scan complete — all threat vectors analyzed.', 'success');
@@ -221,8 +235,15 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
 
   const handleTargetedScan = async () => {
     if (scanRunning) return;
-    showToast('Targeted scan initiated — Credential Stuffing', 'info');
-    await runDetection('credential_stuffing');
+    const types = [
+      { id: 'brute_force', label: 'Brute Force' },
+      { id: 'credential_stuffing', label: 'Credential Stuffing' },
+      { id: 'insider_threat', label: 'Insider Threat' },
+      { id: 'sql_injection', label: 'SQL Injection' },
+    ];
+    const pick = types[Math.floor(Math.random() * types.length)];
+    showToast(`Targeted scan initiated — ${pick.label}`, 'info');
+    await runDetection(pick.id);
   };
 
   // Get the playbook for the current result
@@ -434,6 +455,30 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
                      ML + DL Correlation
                    </div>
                  </div>
+
+                 {/* Per-phase breakdown for deep scan results */}
+                 {lastResult.phases && (
+                   <div>
+                     <div className="text-xs text-zinc-500 font-medium mb-2">Scan Phases</div>
+                     <div className="space-y-2">
+                       {lastResult.phases.map((phase, i) => {
+                         const sevColor = phase.severity === 'Critical' ? 'text-critical' : phase.severity === 'High' ? 'text-warning' : phase.severity === 'Medium' ? 'text-amber-500' : 'text-success';
+                         return (
+                           <div key={i} className="flex items-center justify-between p-2 bg-zinc-900/60 rounded-lg border border-border">
+                             <div className="flex items-center gap-2">
+                               <div className="text-[10px] font-mono text-zinc-600 w-4">P{i + 1}</div>
+                               <span className="text-xs font-medium text-zinc-200">{phase.name}</span>
+                             </div>
+                             <div className="flex items-center gap-3">
+                               <span className={`text-[10px] font-bold ${sevColor}`}>{phase.severity}</span>
+                               <span className="text-[10px] font-mono text-zinc-400">{(phase.confidence * 100).toFixed(0)}%</span>
+                             </div>
+                           </div>
+                         );
+                       })}
+                     </div>
+                   </div>
+                 )}
               </div>
               
               {/* Incident Response Playbook — dynamic per attack type */}
