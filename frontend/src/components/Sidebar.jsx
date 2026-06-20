@@ -9,7 +9,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
     { id: 'alerts', label: 'Threat Alerts', icon: <AlertTriangle size={18} /> },
     { id: 'assistant', label: 'Security Assistant', icon: <MessageSquare size={18} /> },
-    { id: 'simulator', label: 'Attack Simulator', icon: <Crosshair size={18} /> },
+    { id: 'simulator', label: 'Threat Detection', icon: <Crosshair size={18} /> },
     { id: 'architecture', label: 'How It Works', icon: <GitBranch size={18} /> },
   ];
 

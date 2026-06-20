@@ -2,7 +2,7 @@ import React from 'react';
 import { Activity, AlertTriangle, Zap, Shield, Bot, Server, Info } from 'lucide-react';
 
 const iconMap = {
-  simulation: <Zap size={14} />,
+  detection: <Zap size={14} />,
   logs: <Server size={14} />,
   ml_engine: <Activity size={14} />,
   dl_engine: <Shield size={14} />,
@@ -31,7 +31,7 @@ export default function ActivityFeed({ events = [] }) {
         </h3>
         <div className="text-center py-8 text-gray-500 text-sm">
           <Activity size={32} className="mx-auto mb-3 opacity-30" />
-          <p>No activity yet. Run an attack simulation to see live events.</p>
+          <p>No activity yet. Run a threat scan to see live events.</p>
         </div>
       </div>
     );

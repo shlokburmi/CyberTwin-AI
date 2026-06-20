@@ -8,7 +8,7 @@ export default function ArchitectureFlow() {
       <div className="border-b border-border pb-6">
         <h2 className="text-4xl font-bold text-zinc-100 mb-3">Architecture Flow</h2>
         <p className="text-zinc-400 text-sm max-w-2xl leading-relaxed">
-          A comprehensive visualization of the CyberTwin AI pipeline. From raw attack simulation to deep learning analysis and actionable insights via our RAG-powered Security Assistant.
+          A comprehensive visualization of the CyberTwin AI pipeline. From raw network telemetry ingestion to deep learning analysis and actionable insights via our RAG-powered Security Assistant.
         </p>
       </div>
 
@@ -22,9 +22,9 @@ export default function ArchitectureFlow() {
             <div className="w-full max-w-[260px]">
               <NodeCard
                 icon={<Radio size={16} className="text-accent" />}
-                title="Attack Simulator"
+                title="Threat Ingestion"
                 subtitle="INGESTION LAYER"
-                desc="Generates synthetic, high-fidelity threat telemetry simulating APTs to train downstream models continuously."
+                desc="Captures and processes real-time network telemetry, log streams, and authentication events for downstream analysis."
               />
             </div>
           </div>

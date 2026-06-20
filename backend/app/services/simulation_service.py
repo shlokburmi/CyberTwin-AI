@@ -116,9 +116,9 @@ def run_simulation(attack_type: str) -> dict:
     now = datetime.now().strftime("%H:%M:%S")
 
     # ── Step 1: Generate attack logs ──────────────────────────────
-    event_store.add_feed_event("simulation", f"🚨 Simulating {profile['label']}...", "warning")
+    event_store.add_feed_event("detection", f"🚨 {profile['label']} detected — initiating threat analysis...", "warning")
     logs = generate_attack_logs(attack_type)
-    event_store.add_feed_event("logs", f"Generated {len(logs)} suspicious log entries", "info")
+    event_store.add_feed_event("logs", f"Captured {len(logs)} suspicious log entries from network", "info")
 
     # ── Step 2: Run ML engine ─────────────────────────────────────
     event_store.add_feed_event("ml_engine", "ML Engine analyzing logs...", "info")

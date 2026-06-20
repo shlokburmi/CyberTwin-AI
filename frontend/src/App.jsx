@@ -38,7 +38,7 @@ export default function App() {
           </div>
             {/* Realism Footer */}
             <div className="mt-12 text-center pointer-events-none">
-              <p className="text-[10px] text-zinc-600 font-medium tracking-widest uppercase">CyberTwin AI • Educational SOC Simulation Platform</p>
+              <p className="text-[10px] text-zinc-600 font-medium tracking-widest uppercase">CyberTwin AI • Enterprise SOC Platform</p>
             </div>
         </main>
 

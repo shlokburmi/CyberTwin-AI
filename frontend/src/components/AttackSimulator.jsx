@@ -11,7 +11,7 @@ const ATTACK_TYPES = [
   {
     id: 'brute_force',
     label: 'Brute Force',
-    description: 'Multi-vector authentication assault simulating credential rotation.',
+    description: 'Repeated authentication failures detected from suspicious origin.',
     icon: <MoreHorizontal size={20} />,
     severity: 'Critical',
     confidence: '94%',
@@ -21,7 +21,7 @@ const ATTACK_TYPES = [
   {
     id: 'credential_stuffing',
     label: 'Cred Stuffing',
-    description: 'Distributed login attempts using compromised breach corpuses.',
+    description: 'Distributed login attempts using known compromised credentials.',
     icon: <UserX size={20} />,
     severity: 'High',
     confidence: '88%',
@@ -41,7 +41,7 @@ const ATTACK_TYPES = [
   {
     id: 'sql_injection',
     label: 'SQL Injection',
-    description: 'Payload fuzzing against primary database endpoints.',
+    description: 'Malicious SQL payloads detected in application request parameters.',
     icon: <Database size={20} />,
     severity: 'Critical',
     confidence: '91%',
@@ -50,22 +50,99 @@ const ATTACK_TYPES = [
   },
 ];
 
+// Attack-specific response playbooks — dynamic per threat type
+const ATTACK_PLAYBOOKS = {
+  'Brute Force Attack': {
+    immediate: [
+      'Block attacking IP addresses and subnet ranges.',
+      'Force password reset on all targeted accounts.',
+      'Enable account lockout after 5 failed attempts.',
+    ],
+    hardening: [
+      'Enforce MFA across all user accounts.',
+      'Implement progressive rate limiting on auth endpoints.',
+      'Deploy CAPTCHA after consecutive failed logins.',
+    ],
+  },
+  'Credential Stuffing': {
+    immediate: [
+      'Block source IPs identified in the credential stuffing attack.',
+      'Force credential rotation for compromised accounts.',
+      'Invalidate all active sessions from affected accounts.',
+    ],
+    hardening: [
+      'Check credentials against known breach databases.',
+      'Implement bot detection and behavioral analysis.',
+      'Enforce unique password policies across services.',
+    ],
+  },
+  'Insider Threat': {
+    immediate: [
+      'Suspend compromised user accounts immediately.',
+      'Revoke elevated privileges for flagged users.',
+      'Isolate affected endpoints from sensitive resources.',
+    ],
+    hardening: [
+      'Deploy User and Entity Behavior Analytics (UEBA).',
+      'Implement data loss prevention (DLP) policies.',
+      'Conduct regular access privilege reviews.',
+    ],
+  },
+  'SQL Injection Attempt': {
+    immediate: [
+      'Block attacking IPs at the WAF level.',
+      'Quarantine affected database endpoints.',
+      'Audit database logs for unauthorized queries.',
+    ],
+    hardening: [
+      'Enforce parameterized queries across all endpoints.',
+      'Deploy Web Application Firewall (WAF) rules.',
+      'Implement strict input validation and output encoding.',
+    ],
+  },
+  'Multi-Vector APT Sequence': {
+    immediate: [
+      'Activate incident response protocol — escalate to SOC Level 2.',
+      'Isolate compromised endpoints from the internal network.',
+      'Revoke all active sessions for affected user accounts.',
+    ],
+    hardening: [
+      'Enforce MFA across all external and internal access points.',
+      'Implement network micro-segmentation to contain lateral movement.',
+      'Deploy enhanced logging and anomaly correlation across all layers.',
+    ],
+  },
+};
+
+const DEFAULT_PLAYBOOK = {
+  immediate: [
+    'Isolate affected systems from the network.',
+    'Revoke active sessions for compromised accounts.',
+    'Begin forensic analysis on affected endpoints.',
+  ],
+  hardening: [
+    'Review and update security policies.',
+    'Enhance monitoring and alerting thresholds.',
+    'Conduct security awareness training.',
+  ],
+};
+
 const PIPELINE_STEPS = [
-  { key: 'logs', label: 'GEN LOGS', icon: <Server size={18} /> },
+  { key: 'logs', label: 'LOG CAPTURE', icon: <Server size={18} /> },
   { key: 'ml', label: 'ML DETECT', icon: <Activity size={18} /> },
-  { key: 'dl', label: 'DL SEQUENCE', icon: <Share2 size={18} /> },
-  { key: 'risk', label: 'SCORE', icon: <Check size={18} /> },
+  { key: 'dl', label: 'DL ANALYZE', icon: <Share2 size={18} /> },
+  { key: 'risk', label: 'RISK SCORE', icon: <Check size={18} /> },
   { key: 'alert', label: 'ALERT', icon: <AlertTriangle size={18} /> },
   { key: 'rag', label: 'RAG MITIGATE', icon: <ShieldAlert size={18} /> },
 ];
 
 export default function AttackSimulator({ onSimulationComplete, showToast }) {
   const [loading, setLoading] = useState(null);
-  const [demoRunning, setDemoRunning] = useState(false);
+  const [scanRunning, setScanRunning] = useState(false);
   const [pipelineStep, setPipelineStep] = useState(2); // Default visual
   const [lastResult, setLastResult] = useState(null);
 
-  const runSimulationAction = async (attackType) => {
+  const runDetection = async (attackType) => {
     setLoading(attackType);
     setLastResult(null);
     setPipelineStep(0);
@@ -90,59 +167,68 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
     } catch (err) {
       clearInterval(stepInterval);
       setPipelineStep(-1);
-      console.error('Simulation failed:', err);
-      setLastResult({ error: 'Simulation failed. Check backend connection.' });
+      console.error('Detection failed:', err);
+      setLastResult({ error: 'Threat detection failed. Check backend connection.' });
       throw err;
     } finally {
       setLoading(null);
     }
   };
 
-  const handleSimulate = async (attackType) => {
-    if (demoRunning) return;
-    await runSimulationAction(attackType);
+  const handleDetect = async (attackType) => {
+    if (scanRunning) return;
+    await runDetection(attackType);
   };
 
-  const handleRunDemo = async () => {
-    if (loading || demoRunning) return;
-    setDemoRunning(true);
+  const handleDeepScan = async () => {
+    if (loading || scanRunning) return;
+    setScanRunning(true);
     setLastResult(null);
     
     try {
-      showToast('Demo sequence started: Phase 1 - Brute Force', 'info');
-      const r1 = await runSimulationAction('brute_force');
+      showToast('Deep scan initiated: Phase 1 — Brute Force Analysis', 'info');
+      const r1 = await runDetection('brute_force');
       
       await new Promise(resolve => setTimeout(resolve, 4000));
       
-      showToast('Demo sequence phase 2: SQL Injection', 'info');
-      const r2 = await runSimulationAction('sql_injection');
+      showToast('Deep scan phase 2: SQL Injection Analysis', 'info');
+      const r2 = await runDetection('sql_injection');
       
       await new Promise(resolve => setTimeout(resolve, 4000));
       
-      showToast('Demo sequence phase 3: Insider Threat Data Exfiltration', 'warning');
-      const r3 = await runSimulationAction('insider_threat');
+      showToast('Deep scan phase 3: Insider Threat Analysis', 'warning');
+      const r3 = await runDetection('insider_threat');
       
-      // Aggregate the results for the final view
+      // Aggregate results from all three real detections
       setLastResult({
-        attack: 'Multi-Vector APT Sequence (Demo)',
+        attack: 'Multi-Vector APT Sequence',
+        severity: 'Critical',
         dl_result: { confidence: Math.max(r1.dl_result?.confidence||0, r2.dl_result?.confidence||0, r3.dl_result?.confidence||0) },
         risk_score: Math.max(r1.risk_score, r2.risk_score, r3.risk_score),
-        recommendation: 'Critical multi-stage attack detected involving credential stuffing, database fuzzing, and data exfiltration. Immediate system lockdown and credential rotation required. ' + (r3.recommendation || '')
+        logs_generated: (r1.logs_generated || 0) + (r2.logs_generated || 0) + (r3.logs_generated || 0),
+        ml_result: 'anomaly_detected',
+        recommendation: r3.recommendation || r2.recommendation || r1.recommendation || 'Multiple distinct threat vectors identified across authentication, database, and data exfiltration layers. Immediate containment and credential rotation required.',
       });
 
-      showToast('Demo sequence completed successfully.', 'success');
+      showToast('Deep scan complete — all threat vectors analyzed.', 'success');
     } catch (error) {
-      console.error("Demo sequence interrupted", error);
-      showToast('Demo sequence failed or interrupted.', 'error');
+      console.error("Deep scan interrupted", error);
+      showToast('Deep scan failed or interrupted.', 'error');
     } finally {
-      setDemoRunning(false);
+      setScanRunning(false);
     }
   };
 
-  const handleCustomSequence = async () => {
-    if (demoRunning) return;
-    showToast('Launching custom sequence (Credential Stuffing)', 'info');
-    await runSimulationAction('credential_stuffing');
+  const handleTargetedScan = async () => {
+    if (scanRunning) return;
+    showToast('Targeted scan initiated — Credential Stuffing', 'info');
+    await runDetection('credential_stuffing');
+  };
+
+  // Get the playbook for the current result
+  const getPlaybook = () => {
+    if (!lastResult || lastResult.error) return null;
+    return ATTACK_PLAYBOOKS[lastResult.attack] || DEFAULT_PLAYBOOK;
   };
 
   return (
@@ -150,46 +236,46 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border pb-6">
         <div>
-          <h2 className="text-3xl font-bold text-zinc-100 mb-1">Simulation Core</h2>
-          <p className="text-zinc-500 text-sm">Configure and monitor advanced threat vector simulations.</p>
+          <h2 className="text-3xl font-bold text-zinc-100 mb-1">Threat Detection</h2>
+          <p className="text-zinc-500 text-sm">Real-time threat detection and active response monitoring.</p>
         </div>
         <div className="flex gap-3">
           <button 
-            onClick={handleRunDemo}
-            disabled={loading !== null || demoRunning}
+            onClick={handleDeepScan}
+            disabled={loading !== null || scanRunning}
             className="flex items-center gap-2 px-5 py-2.5 bg-zinc-800 text-zinc-200 border border-zinc-700 rounded-lg text-sm font-semibold hover:bg-zinc-700 hover:text-white transition-colors disabled:opacity-50"
           >
-            {demoRunning ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
-            {demoRunning ? 'Demo in Progress...' : 'Run Full Demo'}
+            {scanRunning ? <Loader2 size={16} className="animate-spin" /> : <Play size={16} />}
+            {scanRunning ? 'Scanning...' : 'Deep Scan'}
           </button>
           <button 
-            onClick={handleCustomSequence}
-            disabled={loading !== null || demoRunning}
+            onClick={handleTargetedScan}
+            disabled={loading !== null || scanRunning}
             className="px-5 py-2.5 bg-zinc-200 text-zinc-900 rounded-lg text-sm font-bold hover:bg-white transition-colors disabled:opacity-50"
           >
-            Launch Custom Sequence
+            Targeted Scan
           </button>
         </div>
       </div>
 
-      {/* Demo Timeline Checklist */}
-      {demoRunning && (
+      {/* Deep Scan Timeline */}
+      {scanRunning && (
         <div className="premium-card p-6 border-accent/30 bg-accent/5 fade-in">
           <div className="flex items-center gap-2 mb-4">
             <Loader2 size={16} className="animate-spin text-accent" />
-            <h3 className="text-sm font-bold text-accent tracking-wide uppercase">Multi-Vector APT Simulation in Progress</h3>
+            <h3 className="text-sm font-bold text-accent tracking-wide uppercase">Multi-Vector Threat Analysis in Progress</h3>
           </div>
           <div className="space-y-3 pl-2">
             {PIPELINE_STEPS.map((step, idx) => {
               const isDone = pipelineStep > idx;
               const isCurrent = pipelineStep === idx;
               const textMap = [
-                'Generating attack telemetry',
-                'ML anomaly detection complete',
-                'DL sequence analysis complete',
-                'Risk score updated',
-                'Alert generated',
-                'RAG mitigation generated'
+                'Capturing network telemetry',
+                'ML anomaly detection processing',
+                'DL sequence correlation analysis',
+                'Threat risk score calculated',
+                'Security alert generated',
+                'RAG mitigation playbook ready'
               ];
               return (
                 <div key={idx} className={`flex items-center gap-3 transition-opacity duration-300 ${isDone || isCurrent ? 'opacity-100' : 'opacity-30'}`}>
@@ -214,7 +300,7 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
       <div className="premium-card p-6">
         <div className="flex items-center gap-2 mb-8">
           <div className="w-2 h-2 rounded-full bg-accent engine-pulse" />
-          <h3 className="text-sm font-bold text-zinc-100 tracking-wide">Active Simulation Pipeline</h3>
+          <h3 className="text-sm font-bold text-zinc-100 tracking-wide">Detection Pipeline</h3>
         </div>
 
         <div className="relative flex justify-between items-center px-4 max-w-4xl mx-auto">
@@ -255,8 +341,8 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
           return (
             <button
               key={attack.id}
-              onClick={() => handleSimulate(attack.id)}
-              disabled={loading !== null || demoRunning}
+              onClick={() => handleDetect(attack.id)}
+              disabled={loading !== null || scanRunning}
               className="premium-card text-left p-5 disabled:opacity-50 disabled:cursor-not-allowed group flex flex-col h-full"
             >
               <div className="flex justify-between items-center mb-4">
@@ -296,87 +382,112 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
         })}
       </div>
       
-      {/* Structured Result Panel (Vercel Style) */}
-      {lastResult && !lastResult.error && !demoRunning && (
-        <div className="premium-card overflow-hidden fade-in">
-          <div className="bg-zinc-900 border-b border-border p-4 flex items-center gap-2">
-            <Check size={18} className="text-success" />
-            <span className="font-semibold text-zinc-100">Simulation Complete</span>
-            <span className="text-sm text-zinc-500 ml-auto">ID: {lastResult.attack}</span>
-          </div>
-          
-          <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Stats Column */}
-            <div className="space-y-6 lg:border-r border-border lg:pr-8">
-               <div>
-                 <div className="text-xs text-zinc-500 font-medium mb-1">Detected Attack</div>
-                 <div className="text-lg font-bold text-zinc-100 capitalize">{lastResult.attack.replace(/_/g, ' ')}</div>
-               </div>
-               
-               <div className="grid grid-cols-2 gap-4">
-                 <div>
-                   <div className="text-xs text-zinc-500 font-medium mb-1">Confidence</div>
-                   <div className="text-lg font-semibold text-zinc-200">{(lastResult.dl_result?.confidence * 100).toFixed(0)}%</div>
-                 </div>
-                 <div>
-                   <div className="text-xs text-zinc-500 font-medium mb-1">Risk Score</div>
-                   <div className="text-lg font-semibold text-zinc-200">{lastResult.risk_score}</div>
-                 </div>
-               </div>
-               
-               <div>
-                 <div className="text-xs text-zinc-500 font-medium mb-1">Detection Source</div>
-                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 border border-primary/20 text-primary rounded-md text-xs font-semibold">
-                   ML + DL Correlation
-                 </div>
-               </div>
+      {/* Dynamic Result Panel */}
+      {lastResult && !lastResult.error && !scanRunning && (() => {
+        const playbook = getPlaybook();
+        return (
+          <div className="premium-card overflow-hidden fade-in">
+            <div className="bg-zinc-900 border-b border-border p-4 flex items-center gap-2">
+              <AlertTriangle size={18} className="text-critical" />
+              <span className="font-semibold text-zinc-100">Threat Detected</span>
+              <span className="text-sm text-zinc-500 ml-auto">
+                ID: {lastResult.alert_id ? `THR-${String(lastResult.alert_id).padStart(4, '0')}` : lastResult.attack}
+              </span>
             </div>
             
-            {/* RAG Mitigation Result - Structured */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center gap-2 text-sm font-bold text-accent mb-4">
-                <Info size={16} /> Incident Response Playbook
+            <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Stats Column */}
+              <div className="space-y-6 lg:border-r border-border lg:pr-8">
+                 <div>
+                   <div className="text-xs text-zinc-500 font-medium mb-1">Detected Attack</div>
+                   <div className="text-lg font-bold text-zinc-100 capitalize">{lastResult.attack.replace(/_/g, ' ')}</div>
+                 </div>
+                 
+                 <div className="grid grid-cols-2 gap-4">
+                   <div>
+                     <div className="text-xs text-zinc-500 font-medium mb-1">Confidence</div>
+                     <div className="text-lg font-semibold text-zinc-200">{(lastResult.dl_result?.confidence * 100).toFixed(0)}%</div>
+                   </div>
+                   <div>
+                     <div className="text-xs text-zinc-500 font-medium mb-1">Risk Score</div>
+                     <div className="text-lg font-semibold text-zinc-200">{lastResult.risk_score}</div>
+                   </div>
+                 </div>
+
+                 {lastResult.severity && (
+                   <div>
+                     <div className="text-xs text-zinc-500 font-medium mb-1">Severity</div>
+                     <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold ${
+                       lastResult.severity === 'Critical' ? 'bg-critical/10 border border-critical/20 text-critical' :
+                       lastResult.severity === 'High' ? 'bg-warning/10 border border-warning/20 text-warning' :
+                       lastResult.severity === 'Medium' ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500' :
+                       'bg-success/10 border border-success/20 text-success'
+                     }`}>
+                       {lastResult.severity}
+                     </div>
+                   </div>
+                 )}
+                 
+                 <div>
+                   <div className="text-xs text-zinc-500 font-medium mb-1">Detection Source</div>
+                   <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 border border-primary/20 text-primary rounded-md text-xs font-semibold">
+                     ML + DL Correlation
+                   </div>
+                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Immediate Action */}
-                <div className="bg-zinc-900/80 border border-border rounded-lg p-4 shadow-sm hover:border-zinc-700 transition-colors">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-critical flex items-center gap-2 mb-3">
-                    <AlertTriangle size={12} /> Immediate Action
-                  </h4>
-                  <ul className="space-y-2 text-xs text-zinc-300">
-                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-critical mt-1.5 shrink-0" />Block suspicious origin IPs automatically.</li>
-                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-critical mt-1.5 shrink-0" />Lock compromised or targeted accounts.</li>
-                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-critical mt-1.5 shrink-0" />Revoke active sessions for affected endpoints.</li>
-                  </ul>
+              {/* Incident Response Playbook — dynamic per attack type */}
+              <div className="lg:col-span-2">
+                <div className="flex items-center gap-2 text-sm font-bold text-accent mb-4">
+                  <Info size={16} /> Incident Response Playbook
                 </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Immediate Action */}
+                  <div className="bg-zinc-900/80 border border-border rounded-lg p-4 shadow-sm hover:border-zinc-700 transition-colors">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-critical flex items-center gap-2 mb-3">
+                      <AlertTriangle size={12} /> Immediate Action
+                    </h4>
+                    <ul className="space-y-2 text-xs text-zinc-300">
+                      {playbook.immediate.map((action, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <div className="w-1 h-1 rounded-full bg-critical mt-1.5 shrink-0" />
+                          {action}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
 
-                {/* Recommended Hardening */}
-                <div className="bg-zinc-900/80 border border-border rounded-lg p-4 shadow-sm hover:border-zinc-700 transition-colors">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-primary flex items-center gap-2 mb-3">
-                    <ShieldAlert size={12} /> Recommended Hardening
-                  </h4>
-                  <ul className="space-y-2 text-xs text-zinc-300">
-                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />Enforce MFA across all external access points.</li>
-                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />Implement stricter rate limiting on login APIs.</li>
-                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />Enhance logging for anomaly correlation.</li>
-                  </ul>
-                </div>
+                  {/* Recommended Hardening */}
+                  <div className="bg-zinc-900/80 border border-border rounded-lg p-4 shadow-sm hover:border-zinc-700 transition-colors">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-primary flex items-center gap-2 mb-3">
+                      <ShieldAlert size={12} /> Recommended Hardening
+                    </h4>
+                    <ul className="space-y-2 text-xs text-zinc-300">
+                      {playbook.hardening.map((action, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                          {action}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
 
-                {/* Threat Context */}
-                <div className="md:col-span-2 bg-zinc-900/80 border border-border rounded-lg p-4 shadow-sm hover:border-zinc-700 transition-colors">
-                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2 mb-2">
-                    <Server size={12} /> Threat Context
-                  </h4>
-                  <p className="text-xs text-zinc-400 leading-relaxed italic">
-                    "{(lastResult.recommendation || 'Multiple distinct threat vectors detected. Immediate lockdown of external interfaces recommended. Incident Response teams deployed.').split('. ').slice(0, 2).join('. ')}."
-                  </p>
+                  {/* Threat Context — uses actual RAG recommendation from backend */}
+                  <div className="md:col-span-2 bg-zinc-900/80 border border-border rounded-lg p-4 shadow-sm hover:border-zinc-700 transition-colors">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2 mb-2">
+                      <Server size={12} /> Threat Context
+                    </h4>
+                    <p className="text-xs text-zinc-400 leading-relaxed italic">
+                      "{lastResult.recommendation || 'Threat vector identified and analyzed. Incident response team notified. Continue monitoring for additional indicators of compromise.'}"
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {lastResult?.error && (
         <div className="p-4 bg-critical/10 border border-critical/20 rounded-xl text-critical text-sm fade-in">

@@ -69,7 +69,7 @@ export default function ThreatAlerts({ refreshKey, showToast }) {
               const isExpanded = expandedId === idx;
               const confidence = alert.confidence ? Math.round(alert.confidence * 100) : 0;
               
-              // Map simulated attacks to the UI's status indicators
+              // Map detected attacks to the UI's status indicators
               let status = alert.status || 'OPEN';
               if (alert.severity === 'Critical') status = 'OPEN';
               if (alert.severity === 'High') status = 'INVESTIGATING';
