@@ -26,7 +26,7 @@ export default function App() {
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} showToast={showToast} />
 
       <div className="flex-1 flex flex-col min-w-0 relative">
-        <TopBar showToast={showToast} />
+        <TopBar showToast={showToast} refreshKey={refreshKey} />
         
         <main className="flex-1 overflow-auto p-6 lg:p-8 relative">
           <div className="max-w-[1400px] mx-auto pb-12">

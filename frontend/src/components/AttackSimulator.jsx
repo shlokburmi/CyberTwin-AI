@@ -141,10 +141,12 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
   const [scanRunning, setScanRunning] = useState(false);
   const [pipelineStep, setPipelineStep] = useState(2); // Default visual
   const [lastResult, setLastResult] = useState(null);
+  const [selectedPhase, setSelectedPhase] = useState(null);
 
   const runDetection = async (attackType) => {
     setLoading(attackType);
     setLastResult(null);
+    setSelectedPhase(null);
     setPipelineStep(0);
 
     const stepInterval = setInterval(() => {
@@ -221,6 +223,7 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
           risk_score: r.risk_score,
           ml_result: r.ml_result,
           logs_generated: r.logs_generated || 0,
+          recommendation: r.recommendation,
         })),
       });
 
@@ -405,46 +408,89 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
       
       {/* Dynamic Result Panel */}
       {lastResult && !lastResult.error && !scanRunning && (() => {
-        const playbook = getPlaybook();
+        // Compute display data based on selected phase tab
+        const isPhaseView = selectedPhase !== null && lastResult.phases?.[selectedPhase];
+        const phase = isPhaseView ? lastResult.phases[selectedPhase] : null;
+        const displayAttack = isPhaseView ? phase.attack : lastResult.attack;
+        const displaySeverity = isPhaseView ? phase.severity : lastResult.severity;
+        const displayConfidence = isPhaseView ? phase.confidence : lastResult.dl_result?.confidence;
+        const displayRisk = isPhaseView ? phase.risk_score : lastResult.risk_score;
+        const displayRecommendation = isPhaseView ? phase.recommendation : lastResult.recommendation;
+
+        // Get playbook for the currently displayed attack
+        const playbook = ATTACK_PLAYBOOKS[displayAttack] || DEFAULT_PLAYBOOK;
+
         return (
           <div className="premium-card overflow-hidden fade-in">
             <div className="bg-zinc-900 border-b border-border p-4 flex items-center gap-2">
               <AlertTriangle size={18} className="text-critical" />
               <span className="font-semibold text-zinc-100">Threat Detected</span>
               <span className="text-sm text-zinc-500 ml-auto">
-                ID: {lastResult.alert_id ? `THR-${String(lastResult.alert_id).padStart(4, '0')}` : lastResult.attack}
+                ID: {lastResult.alert_id ? `THR-${String(lastResult.alert_id).padStart(4, '0')}` : displayAttack}
               </span>
             </div>
+
+            {/* Phase Tabs — only shown for deep scan results */}
+            {lastResult.phases && (
+              <div className="flex items-center gap-1 px-4 pt-3 pb-0 bg-zinc-900/50 border-b border-border overflow-x-auto">
+                <button
+                  onClick={() => setSelectedPhase(null)}
+                  className={`px-3 py-2 text-xs font-semibold rounded-t-lg border-b-2 transition-colors whitespace-nowrap ${
+                    selectedPhase === null
+                      ? 'border-accent text-accent bg-accent/5'
+                      : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                  }`}
+                >
+                  Overview
+                </button>
+                {lastResult.phases.map((p, i) => {
+                  const sevColor = p.severity === 'Critical' ? 'border-critical text-critical' : p.severity === 'High' ? 'border-warning text-warning' : p.severity === 'Medium' ? 'border-amber-500 text-amber-500' : 'border-success text-success';
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedPhase(i)}
+                      className={`px-3 py-2 text-xs font-semibold rounded-t-lg border-b-2 transition-colors whitespace-nowrap ${
+                        selectedPhase === i
+                          ? `${sevColor} bg-zinc-800/50`
+                          : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                      }`}
+                    >
+                      P{i + 1}: {p.name}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             
             <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Stats Column */}
               <div className="space-y-6 lg:border-r border-border lg:pr-8">
                  <div>
                    <div className="text-xs text-zinc-500 font-medium mb-1">Detected Attack</div>
-                   <div className="text-lg font-bold text-zinc-100 capitalize">{lastResult.attack.replace(/_/g, ' ')}</div>
+                   <div className="text-lg font-bold text-zinc-100 capitalize">{displayAttack.replace(/_/g, ' ')}</div>
                  </div>
                  
                  <div className="grid grid-cols-2 gap-4">
                    <div>
                      <div className="text-xs text-zinc-500 font-medium mb-1">Confidence</div>
-                     <div className="text-lg font-semibold text-zinc-200">{(lastResult.dl_result?.confidence * 100).toFixed(0)}%</div>
+                     <div className="text-lg font-semibold text-zinc-200">{(displayConfidence * 100).toFixed(0)}%</div>
                    </div>
                    <div>
                      <div className="text-xs text-zinc-500 font-medium mb-1">Risk Score</div>
-                     <div className="text-lg font-semibold text-zinc-200">{lastResult.risk_score}</div>
+                     <div className="text-lg font-semibold text-zinc-200">{displayRisk}</div>
                    </div>
                  </div>
 
-                 {lastResult.severity && (
+                 {displaySeverity && (
                    <div>
                      <div className="text-xs text-zinc-500 font-medium mb-1">Severity</div>
                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold ${
-                       lastResult.severity === 'Critical' ? 'bg-critical/10 border border-critical/20 text-critical' :
-                       lastResult.severity === 'High' ? 'bg-warning/10 border border-warning/20 text-warning' :
-                       lastResult.severity === 'Medium' ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500' :
+                       displaySeverity === 'Critical' ? 'bg-critical/10 border border-critical/20 text-critical' :
+                       displaySeverity === 'High' ? 'bg-warning/10 border border-warning/20 text-warning' :
+                       displaySeverity === 'Medium' ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500' :
                        'bg-success/10 border border-success/20 text-success'
                      }`}>
-                       {lastResult.severity}
+                       {displaySeverity}
                      </div>
                    </div>
                  )}
@@ -456,24 +502,28 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
                    </div>
                  </div>
 
-                 {/* Per-phase breakdown for deep scan results */}
-                 {lastResult.phases && (
+                 {/* Per-phase summary — only in Overview tab */}
+                 {!isPhaseView && lastResult.phases && (
                    <div>
                      <div className="text-xs text-zinc-500 font-medium mb-2">Scan Phases</div>
                      <div className="space-y-2">
-                       {lastResult.phases.map((phase, i) => {
-                         const sevColor = phase.severity === 'Critical' ? 'text-critical' : phase.severity === 'High' ? 'text-warning' : phase.severity === 'Medium' ? 'text-amber-500' : 'text-success';
+                       {lastResult.phases.map((ph, i) => {
+                         const sevColor = ph.severity === 'Critical' ? 'text-critical' : ph.severity === 'High' ? 'text-warning' : ph.severity === 'Medium' ? 'text-amber-500' : 'text-success';
                          return (
-                           <div key={i} className="flex items-center justify-between p-2 bg-zinc-900/60 rounded-lg border border-border">
+                           <button
+                             key={i}
+                             onClick={() => setSelectedPhase(i)}
+                             className="w-full flex items-center justify-between p-2 bg-zinc-900/60 rounded-lg border border-border hover:border-zinc-600 transition-colors cursor-pointer"
+                           >
                              <div className="flex items-center gap-2">
                                <div className="text-[10px] font-mono text-zinc-600 w-4">P{i + 1}</div>
-                               <span className="text-xs font-medium text-zinc-200">{phase.name}</span>
+                               <span className="text-xs font-medium text-zinc-200">{ph.name}</span>
                              </div>
                              <div className="flex items-center gap-3">
-                               <span className={`text-[10px] font-bold ${sevColor}`}>{phase.severity}</span>
-                               <span className="text-[10px] font-mono text-zinc-400">{(phase.confidence * 100).toFixed(0)}%</span>
+                               <span className={`text-[10px] font-bold ${sevColor}`}>{ph.severity}</span>
+                               <span className="text-[10px] font-mono text-zinc-400">{(ph.confidence * 100).toFixed(0)}%</span>
                              </div>
-                           </div>
+                           </button>
                          );
                        })}
                      </div>
@@ -485,6 +535,9 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
               <div className="lg:col-span-2">
                 <div className="flex items-center gap-2 text-sm font-bold text-accent mb-4">
                   <Info size={16} /> Incident Response Playbook
+                  {isPhaseView && (
+                    <span className="text-xs font-normal text-zinc-500 ml-1">— {phase.name}</span>
+                  )}
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -518,13 +571,13 @@ export default function AttackSimulator({ onSimulationComplete, showToast }) {
                     </ul>
                   </div>
 
-                  {/* Threat Context — uses actual RAG recommendation from backend */}
+                  {/* Threat Context — uses actual RAG recommendation */}
                   <div className="md:col-span-2 bg-zinc-900/80 border border-border rounded-lg p-4 shadow-sm hover:border-zinc-700 transition-colors">
                     <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2 mb-2">
                       <Server size={12} /> Threat Context
                     </h4>
                     <p className="text-xs text-zinc-400 leading-relaxed italic">
-                      "{lastResult.recommendation || 'Threat vector identified and analyzed. Incident response team notified. Continue monitoring for additional indicators of compromise.'}"
+                      "{displayRecommendation || 'Threat vector identified and analyzed. Incident response team notified. Continue monitoring for additional indicators of compromise.'}"
                     </p>
                   </div>
                 </div>

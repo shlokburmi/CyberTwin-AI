@@ -257,10 +257,10 @@ Active Threats     : ${alerts.length} critical incidents
           </div>
           
           <div className="space-y-3">
-            <HealthRow icon={<Activity size={14}/>} label="Backend API" status="Optimal" />
-            <HealthRow icon={<Cpu size={14}/>} label="ML Engine" status="Optimal" />
-            <HealthRow icon={<TrendingUp size={14}/>} label="DL Engine (LSTM)" status="Optimal" />
-            <HealthRow icon={<Server size={14}/>} label="RAG Engine" status="Optimal" />
+            <HealthRow icon={<Activity size={14}/>} label="Backend API" status={systemStatus?.backend === 'active' ? 'Optimal' : 'Offline'} isActive={systemStatus?.backend === 'active'} />
+            <HealthRow icon={<Cpu size={14}/>} label="ML Engine" status={systemStatus?.ml_engine === 'active' ? 'Optimal' : 'Offline'} isActive={systemStatus?.ml_engine === 'active'} />
+            <HealthRow icon={<TrendingUp size={14}/>} label="DL Engine (LSTM)" status={systemStatus?.dl_engine === 'active' ? 'Optimal' : 'Offline'} isActive={systemStatus?.dl_engine === 'active'} />
+            <HealthRow icon={<Server size={14}/>} label="RAG Engine" status={systemStatus?.rag_engine === 'active' ? 'Optimal' : 'Offline'} isActive={systemStatus?.rag_engine === 'active'} />
           </div>
         </div>
 
@@ -390,7 +390,9 @@ Active Threats     : ${alerts.length} critical incidents
   );
 }
 
-function HealthRow({ icon, label, status }) {
+function HealthRow({ icon, label, status, isActive = true }) {
+  const statusColor = isActive ? 'text-success' : 'text-critical';
+  const dotColor = isActive ? 'bg-success' : 'bg-critical';
   return (
     <div className="flex items-center justify-between p-2 rounded-lg hover:bg-zinc-800/50 transition-colors">
       <div className="flex items-center gap-3">
@@ -400,8 +402,8 @@ function HealthRow({ icon, label, status }) {
         <span className="text-sm font-medium text-zinc-300">{label}</span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-xs font-semibold text-success">{status}</span>
-        <div className="w-1.5 h-1.5 rounded-full bg-success engine-pulse" />
+        <span className={`text-xs font-semibold ${statusColor}`}>{status}</span>
+        <div className={`w-1.5 h-1.5 rounded-full ${dotColor} ${isActive ? 'engine-pulse' : ''}`} />
       </div>
     </div>
   );
