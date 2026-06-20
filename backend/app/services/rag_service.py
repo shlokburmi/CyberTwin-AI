@@ -99,7 +99,7 @@ class RAGService:
                 prompt = (
                     "You are CyberTwin AI Security Assistant, an expert cybersecurity analyst. "
                     "Use the following cybersecurity knowledge context to answer the user's question. "
-                    "Be concise, professional, and actionable. Use markdown formatting for "
+                    "Be con it get cise, professional, and actionable. Use markdown formatting for "
                     "headers, bullet points, and code blocks where appropriate.\n\n"
                     f"Context:\n{context}\n\n"
                     f"Question: {question}\n\n"
